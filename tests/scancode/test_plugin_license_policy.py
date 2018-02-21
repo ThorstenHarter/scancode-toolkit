@@ -38,6 +38,9 @@ class TestLicensePolicy(FileDrivenTesting):
 
     test_data_dir = join(dirname(__file__), 'data')
 
+    def test_process_codebase_info_only(self):
+        test_codebase = self.get_test_loc('plugin_license_policy/test-codebase')
+
     def test_load_license_policy_invalid(self):
         test_file = self.get_test_loc('plugin_license_policy/license_policies_invalid.yml')
 
