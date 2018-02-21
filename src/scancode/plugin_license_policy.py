@@ -69,6 +69,12 @@ class LicensePolicy(PostScanPlugin):
             return
 
         license_policy = load_license_policy(license_policy)
+
+        for resouce in codebase.walk(topdown=True):
+            if not resouce.is_file:
+                continue
+            
+            print(resource)
         
         # TODO: iterate thru and apply the policy
 
