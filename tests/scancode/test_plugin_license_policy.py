@@ -39,7 +39,14 @@ class TestLicensePolicy(FileDrivenTesting):
     test_data_dir = join(dirname(__file__), 'data')
 
     def test_process_codebase_info_only(self):
-        test_codebase = self.get_test_loc('plugin_license_policy/test-codebase')
+        test_dir = self.extract_test_tar('plugin_license_policy/policy-codebase.tgz')
+        result_file = self.get_temp_file('json')
+        policy_file = self.get_test_loc('plugin_license_policy/license-policy-file.yml')
+        expected_file = self.get_test_loc('plugin_license_policy/policy-codebase-expected.json')
+
+        run_scan_click(['--info', '--license', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
+
+        check_json_scan(expected_file, result_file)
 
     def test_load_license_policy_invalid(self):
         test_file = self.get_test_loc('plugin_license_policy/license_policies_invalid.yml')

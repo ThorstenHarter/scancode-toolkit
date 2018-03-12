@@ -33,6 +33,8 @@ from os.path import exists
 from os.path import isdir
 from os.path import join
 
+import attr
+
 from commoncode import saneyaml
 from plugincode.post_scan import PostScanPlugin
 from plugincode.post_scan import post_scan_impl
@@ -46,6 +48,9 @@ class LicensePolicy(PostScanPlugin):
     Add the "license_policy" attribute to a resouce if it contains a 
     detected license key that is found in the license_policy.yml file
     """
+
+    attributes = dict(license_policy=attr.ib(default=attr.Factory(dict)))
+
     sort_order = 9
 
     options = [
@@ -70,16 +75,22 @@ class LicensePolicy(PostScanPlugin):
 
         license_policy = load_license_policy(license_policy)
 
-        for resouce in codebase.walk(topdown=True):
-            if not resouce.is_file:
+        for resource in codebase.walk(topdown=True):
+            if not resource.is_file:
                 continue
             
-            print(resource)
+            if resource.licenses:
+                for license in resource.licenses:
+                    license_key = license.get('key')
+                    if license_key in license_policy['license_policies'].keys():
+                        policy = license_policy['license_policies'].get(license_key, {})
+
+                        resource.license_policy = policy
+                        codebase.save_resource(resource)
+            
         
-        # TODO: iterate thru and apply the policy
-
-
 def load_license_policy(license_policy):
+    # TODO: update these docs
     """
     Return a license policy loaded from the license policy file.
     """
