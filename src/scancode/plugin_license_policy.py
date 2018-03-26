@@ -77,7 +77,7 @@ class LicensePolicy(PostScanPlugin):
         for resource in codebase.walk(topdown=True):
             if not resource.is_file:
                 continue
-
+            
             try:
                 for license in resource.licenses:
                     resource_license_key = license.get('key')

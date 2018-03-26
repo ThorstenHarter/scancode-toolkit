@@ -81,7 +81,7 @@ class TestLicensePolicy(FileDrivenTesting):
         run_scan_click(['--license', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
 
         check_json_scan(expected_file, result_file, regen=False)
-
+    
     def test_load_license_policy_invalid(self):
         test_file = self.get_test_loc('plugin_license_policy/license_policies_invalid.yml')
 
