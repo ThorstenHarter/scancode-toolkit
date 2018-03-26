@@ -70,7 +70,6 @@ class LicensePolicy(PostScanPlugin):
         """
         """
         if not self.is_enabled(license_policy):
-            # TODO: fail here, or print a message
             return
 
         license_policy = load_license_policy(license_policy)
@@ -78,17 +77,24 @@ class LicensePolicy(PostScanPlugin):
         for resource in codebase.walk(topdown=True):
             if not resource.is_file:
                 continue
-            
-            if resource.licenses:
+
+            try:
                 for license in resource.licenses:
-                    license_key = license.get('key')
-                    if license_key in license_policy['license_policies'].keys():
-                        policy = license_policy['license_policies'].get(license_key, {})
+                    resource_license_key = license.get('key')
+                    license_policies = license_policy.get('license_policies')
+
+                    if resource_license_key in license_policies.keys():
+                        policy = license_policies.get(resource_license_key, {})
 
                         resource.license_policy = policy
                         codebase.save_resource(resource)
             
-        
+            except AttributeError:
+                # add license_policy regardless if there is --license info or not
+                resource.license_policy = {}
+                codebase.save_resource(resource)
+
+
 def load_license_policy(license_policy):
     # TODO: update these docs
     """
