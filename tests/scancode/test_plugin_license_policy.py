@@ -29,7 +29,7 @@ from os.path import dirname
 from os.path import join
 
 from commoncode.testcase import FileDrivenTesting
-from scancode.cli_test_utils import check_json_scan
+from scancode.cli_test_utils import load_json_result
 from scancode.cli_test_utils import run_scan_click
 from scancode.plugin_license_policy import load_license_policy
 
@@ -47,7 +47,21 @@ class TestLicensePolicy(FileDrivenTesting):
 
         run_scan_click(['--info', '--license', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
 
-        check_json_scan(expected_file, result_file, regen=False)
+        scan_result = load_json_result(result_file)
+
+        for result in scan_result['files']:
+            assert 'license_policy' in result.keys()
+
+        approved, restricted = 0, 0
+        for result in scan_result['files']:
+            if result.get('license_policy') != {}:
+                if result.get('license_policy').get('label') == "Approved License":
+                    approved += 1
+                if result.get('license_policy').get('label') == "Restricted License":
+                    restricted += 1
+
+        assert approved == 1
+        assert restricted == 4
 
     def test_process_codebase_license_only(self):
         test_dir = self.extract_test_tar('plugin_license_policy/policy-codebase.tgz')
@@ -58,7 +72,22 @@ class TestLicensePolicy(FileDrivenTesting):
 
         run_scan_click(['--license', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
 
-        check_json_scan(expected_file, result_file, regen=False)
+        scan_result = load_json_result(result_file)
+
+        for result in scan_result['files']:
+            assert 'license_policy' in result.keys()
+
+        approved, restricted = 0, 0
+        for result in scan_result['files']:
+            if result.get('license_policy') != {}:
+                if result.get('license_policy').get('label') == "Approved License":
+                    approved += 1
+                if result.get('license_policy').get('label') == "Restricted License":
+                    restricted += 1
+
+        assert approved == 1
+        assert restricted == 4
+            
 
     def test_process_codebase_info_only(self):
         test_dir = self.extract_test_tar('plugin_license_policy/policy-codebase.tgz')
@@ -69,7 +98,13 @@ class TestLicensePolicy(FileDrivenTesting):
 
         run_scan_click(['--info', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
 
-        check_json_scan(expected_file, result_file, regen=False)
+        scan_result = load_json_result(result_file)
+
+        for result in scan_result['files']:
+            assert 'license_policy' in result.keys()
+
+        for result in scan_result['files']:
+            assert result.get('license_policy') == {}
 
     def test_process_codebase_invalid_policy_file(self):
         test_dir = self.extract_test_tar('plugin_license_policy/policy-codebase.tgz')
@@ -79,8 +114,14 @@ class TestLicensePolicy(FileDrivenTesting):
         expected_file = self.get_test_loc('plugin_license_policy/invalid-policy-file-expected.json')
 
         run_scan_click(['--license', '--license-policy', policy_file, test_dir, '--json-pp', result_file])
+        
+        scan_result = load_json_result(result_file)
 
-        check_json_scan(expected_file, result_file, regen=False)
+        for result in scan_result['files']:
+            assert 'license_policy' in result.keys()
+
+        for result in scan_result['files']:
+            assert result.get('license_policy') == {}
     
     def test_load_license_policy_invalid(self):
         test_file = self.get_test_loc('plugin_license_policy/license_policies_invalid.yml')
